@@ -7,6 +7,8 @@ import { Wallet, Zap, Menu, X } from "lucide-react";
 import { useState } from "react";
 import GlassButton from "@/components/ui/GlassButton";
 import { useAuthStore } from "@/stores/auth-store";
+import Image from "next/image";
+import logo from "@/public/logo.png";
 
 export default function NavbarFloating() {
   const pathname = usePathname();
@@ -18,10 +20,15 @@ export default function NavbarFloating() {
     { href: "/dashboard", label: "Dashboard" },
   ];
 
+  // Don't show navbar on builder pages
+  if (pathname?.startsWith("/builder")) {
+    return null;
+  }
+
   return (
     <div className="flex justify-center items-center">
       <motion.nav
-      className="fixed top-5 -translate-x-1/2 w-[85%] max-w-6xl z-50 glass"
+      className="fixed top-5 -translate-x-1/2 w-[85%] max-w-4xl z-50 glass"
       style={{
         background: "rgba(255,255,255,0.06)",
         backdropFilter: "blur(20px)",
@@ -35,13 +42,12 @@ export default function NavbarFloating() {
       <div className="flex items-center justify-between p-2">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group pl-2">
-          <motion.div
-            whileHover={{ rotate: 360 }}
-            transition={{ duration: 0.5 }}
-          >
-            <Zap className="w-6 h-6 text-[#4F9EFF]" />
-          </motion.div>
-          <span className="text-xl font-bold text-white">AptosFlow</span>
+          <Image src={"/logo.png"} alt="AptosFlow" width={52} height={52}/>
+          <span className="text-2xl font-bold text-white">Aptos
+          <span className="bg-gradient-to-r from-[#4F9EFF] to-[#7ED4FF] bg-clip-text text-transparent">
+            Flow
+            </span>
+            </span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -50,7 +56,7 @@ export default function NavbarFloating() {
             <Link
               key={item.href}
               href={item.href}
-              className={`relative px-3 py-2 text-sm font-medium transition-colors ${
+              className={`relative px-3 py-2 text-lg font-medium transition-colors ${
                 pathname === item.href
                   ? "text-[#4F9EFF]"
                   : "text-gray-300 hover:text-white"

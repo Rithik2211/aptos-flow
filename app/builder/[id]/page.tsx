@@ -2,8 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Save, Play, Settings, X } from "lucide-react";
-import NavbarFloating from "@/components/layout/NavbarFloating";
+import BuilderHeader from "@/components/layout/BuilderHeader";
 import WorkflowCanvas from "@/components/workflow/WorkflowCanvas";
 import SidebarPalette from "@/components/workflow/SidebarPalette";
 import NodeConfigModal from "@/components/workflow/NodeConfigModal";
@@ -187,35 +186,15 @@ export default function WorkflowBuilderPage() {
 
   return (
     <div className="h-screen bg-[#0D0D0E] flex flex-col overflow-hidden">
-      <NavbarFloating />
-
-      {/* Top Bar */}
-      <div className="mt-20 px-6 py-4 border-b border-white/10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4 flex-1">
-            <input
-              type="text"
-              value={workflowName}
-              onChange={(e) => setWorkflowName(e.target.value)}
-              className="bg-transparent text-xl font-semibold text-white border-none outline-none"
-              placeholder="Workflow Name"
-            />
-          </div>
-          <div className="flex items-center gap-3">
-            <GlassButton variant="secondary" onClick={handleSave}>
-              <Save className="mr-2" size={18} />
-              Save
-            </GlassButton>
-            <GlassButton variant="primary" onClick={handleRun}>
-              <Play className="mr-2" size={18} />
-              Run
-            </GlassButton>
-          </div>
-        </div>
-      </div>
+      <BuilderHeader
+        workflowName={workflowName}
+        onWorkflowNameChange={setWorkflowName}
+        onSave={handleSave}
+        onRun={handleRun}
+      />
 
       {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden pt-16">
         {/* Sidebar */}
         <SidebarPalette />
 
