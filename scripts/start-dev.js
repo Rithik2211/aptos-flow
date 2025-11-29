@@ -12,7 +12,8 @@ Object.defineProperty(process, 'version', {
 });
 
 // Start Next.js dev server
-const nextBin = path.join(__dirname, '../node_modules/.bin/next');
+// Use the actual Next.js binary directly (cross-platform)
+const nextBin = path.join(__dirname, '../node_modules/next/dist/bin/next');
 const child = spawn('node', [nextBin, 'dev'], {
   stdio: 'inherit',
   shell: true,

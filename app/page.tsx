@@ -49,15 +49,56 @@ export default function LandingPage() {
             transition={{ duration: 0.6 }}
           >
             <h1 className="text-6xl md:text-7xl font-bold text-white mb-6 leading-tight">
-              Smart Money
-              <br />
+            Launch {" "}
+              
               <span className="bg-gradient-to-r from-[#4F9EFF] to-[#7ED4FF] bg-clip-text text-transparent">
-                Automation Builder
+              Aptos {" "}
+              </span>
+              <br />
+              Automations, In{" "}
+              <span className="relative inline-block ">
+                Minutes.
+                {/* Thick gradient underline (red to purple) with curved bend */}
+                <svg 
+                  className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3/4 h-2"
+                  viewBox="0 0 100 3"
+                  preserveAspectRatio="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <defs>
+                    <linearGradient id="underlineGradient" x1="0%" y1="0%" x2="90%" y2="0%">
+                      <stop offset="0%" stopColor="#ef4444" />
+                      <stop offset="50%" stopColor="#dc2626" />
+                      <stop offset="100%" stopColor="#9333ea" />
+                    </linearGradient>
+                  </defs>
+                  <path 
+                    d="M 0 2 Q 50 0, 100 2" 
+                    stroke="url(#underlineGradient)" 
+                    strokeWidth="2.5" 
+                    fill="none"
+                    strokeLinecap="round"
+                  />
+                </svg>
+                {/* Thinner red line beneath on the left with curve */}
+                <svg 
+                  className="absolute -bottom-3.5 left-1/2 -translate-x-1/2 w-1/2 h-1.5"
+                  viewBox="0 0 100 2"
+                  preserveAspectRatio="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path 
+                    d="M 0 1.5 Q 50 0, 100 1.5" 
+                    stroke="#ef4444" 
+                    strokeWidth="1" 
+                    fill="none"
+                    strokeLinecap="round"
+                  />
+                </svg>
               </span>
             </h1>
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
-              Build no-code workflows to automate DeFi trading, payments, and rewards on Aptos.
-              Connect triggers, actions, and logic with a simple drag-and-drop interface.
+            Automate trades, payments, rewards, and identity-gated actions with a simple drag-and-drop builder.
             </p>
             <Link href="/builder/new">
               <GlassButton variant="primary" glow className="text-lg px-8 py-4">
