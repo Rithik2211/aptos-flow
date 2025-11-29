@@ -79,8 +79,8 @@ export default function WorkflowBuilderPage() {
     */
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      // Use dummy user ID for development (bypassing auth)
+      const DUMMY_USER_ID = "00000000-0000-0000-0000-000000000000";
 
       const workflowDefinition = getWorkflowDefinition();
 
@@ -88,7 +88,7 @@ export default function WorkflowBuilderPage() {
         const { data, error } = await supabase
           .from("workflows")
           .insert({
-            user_id: user.id,
+            user_id: DUMMY_USER_ID,
             name: workflowName,
             description: workflowDescription,
             json_definition: workflowDefinition,

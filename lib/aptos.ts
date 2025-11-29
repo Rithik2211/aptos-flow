@@ -1,9 +1,12 @@
 import { Aptos, AptosConfig, Network, Account, Ed25519PrivateKey } from "@aptos-labs/ts-sdk";
 
-const network = (process.env.APTOS_NETWORK as Network) || Network.TESTNET;
+const APTOS_NETWORK = (process.env.APTOS_NETWORK || "testnet") as Network;
 
-export const aptosConfig = new AptosConfig({ network });
-export const aptos = new Aptos(aptosConfig);
+const config = new AptosConfig({
+    network: APTOS_NETWORK,
+});
+
+export const aptos = new Aptos(config);
 
 /**
  * Execution wallet for automated workflows
@@ -111,7 +114,7 @@ export async function transferAPT(
  */
 export async function fundExecutionAccount(): Promise<boolean> {
     try {
-        if (network !== Network.TESTNET && network !== Network.DEVNET) {
+        if (APTOS_NETWORK !== Network.TESTNET && APTOS_NETWORK !== Network.DEVNET) {
             console.error("Faucet only available on testnet/devnet");
             return false;
         }
