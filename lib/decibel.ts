@@ -33,7 +33,7 @@ export interface TradeResult {
 export async function getQuote(params: QuoteRequest): Promise<QuoteResponse | null> {
     try {
         // In a real implementation, this would call the Decibel API
-        // For now, we'll mock the response for testing
+        
         console.log("Fetching quote from Decibel:", params);
 
         // Mock delay
@@ -44,7 +44,7 @@ export async function getQuote(params: QuoteRequest): Promise<QuoteResponse | nu
             fromToken: params.fromToken,
             toToken: params.toToken,
             fromAmount: params.amount,
-            toAmount: params.amount * 10.5, // Mock price
+            toAmount: params.amount * 10.5, 
             price: 10.5,
             estimatedGas: 0.001,
             route: [],
@@ -62,7 +62,7 @@ export async function executeSwap(
     quoteId: string,
     userAddress: string
 ): Promise<TradeResult> {
-    // Mock mode for testing (bypasses Aptos API to avoid rate limits)
+    
     if (process.env.MOCK_MODE === "true") {
         console.log("🧪 MOCK MODE: Simulating swap execution...");
         await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay

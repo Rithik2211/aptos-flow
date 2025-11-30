@@ -2,6 +2,17 @@
 
 A no-code workflow builder for automating DeFi trading, payments, and rewards on Aptos blockchain. Built with Next.js 15, React Flow, and Supabase.
 
+## Screenshots
+
+![Landing Page](./public/demo.png)
+*Beautiful landing page with glassmorphism effects and smooth animations*
+
+![Workflow Builder](./public/demo1.png)
+*Drag-and-drop workflow builder with visual node connections*
+
+![Dashboard](./public/demo2.png)
+*Real-time workflow execution monitoring and management*
+
 ## Features
 
 - 🎨 **Beautiful UI**: Dark theme with glassmorphism effects, smooth animations, and floating navbar
