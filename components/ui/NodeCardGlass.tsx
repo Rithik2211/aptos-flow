@@ -41,12 +41,15 @@ const NodeCardGlass = forwardRef<HTMLDivElement, NodeCardGlassProps>(
       whileTap={{ scale: 0.98 }}
       {...(restProps as any)}
     >
+      <div className="flex items-center gap-2">
         {Icon && (
           <div className="mb-2 text-[#4F9EFF]">
             <Icon size={24} />
           </div>
         )}
         <h3 className="font-semibold text-white mb-1">{title}</h3>
+      </div>
+        
         {description && (
           <p className="text-sm text-gray-400">{description}</p>
         )}

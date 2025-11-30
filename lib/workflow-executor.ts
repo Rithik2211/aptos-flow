@@ -30,6 +30,7 @@ export interface ExecutionContext {
   workflowId: string;
   runId: string;
   variables: Record<string, any>;
+  logs: string[];
 }
 
 export interface NodeExecutionResult {
@@ -243,39 +244,61 @@ async function executeConditional(
   context: ExecutionContext,
   inputData?: any
 ): Promise<NodeExecutionResult> {
-  const { variable, operator, value } = config;
+  // Support both old structured format and new string format
+  let { variable, operator, value, condition } = config;
+
+  // If we have a condition string (e.g. "price < 8.5"), parse it
+  if (condition && !variable) {
+    // Simple regex to parse "variable operator value"
+    const match = condition.match(/^([a-zA-Z0-9_]+)\s*(<|>|<=|>=|==|!=)\s*(.+)$/);
+    if (match) {
+      variable = match[1];
+      operator = match[2];
+      value = match[3];
+    }
+  }
 
   if (!variable || !operator || value === undefined) {
     return { success: false, error: "Conditional configuration incomplete" };
   }
 
-  // Get variable value from context or input
-  const variableValue = context.variables[variable] || inputData?.[variable];
+  // Resolve variable from context or input
+  let actualValue = inputData?.[variable] || context.variables[variable];
 
-  if (variableValue === undefined) {
-    return { success: false, error: `Variable "${variable}" not found` };
+  // Special case for "price" variable if not found in input
+  if (variable === "price" && actualValue === undefined) {
+    // In a real app, we might fetch the latest price here if not passed in
+    // For now, check if we have it in context variables
+    actualValue = context.variables["price"];
   }
 
-  // Evaluate condition
-  let conditionMet = false;
+  console.log(`Evaluating condition: ${variable} (${actualValue}) ${operator} ${value}`);
+
+  let isTrue = false;
+
+  // Convert value to number if possible for comparison
+  const numActual = parseFloat(actualValue);
+  const numTarget = parseFloat(value);
+  const isNumeric = !isNaN(numActual) && !isNaN(numTarget);
+
   switch (operator) {
-    case ">":
-      conditionMet = variableValue > value;
-      break;
-    case "<":
-      conditionMet = variableValue < value;
-      break;
-    case ">=":
-      conditionMet = variableValue >= value;
-      break;
-    case "<=":
-      conditionMet = variableValue <= value;
-      break;
     case "==":
-      conditionMet = variableValue == value;
+      isTrue = actualValue == value;
       break;
     case "!=":
-      conditionMet = variableValue != value;
+      isTrue = actualValue != value;
+      break;
+    case ">":
+      isTrue = isNumeric ? numActual > numTarget : actualValue > value;
+      break;
+    case "<":
+      isTrue = isNumeric ? numActual < numTarget : actualValue < value;
+      break;
+    case ">=":
+      isTrue = isNumeric ? numActual >= numTarget : actualValue >= value;
+      break;
+    case "<=":
+      isTrue = isNumeric ? numActual <= numTarget : actualValue <= value;
       break;
     default:
       return { success: false, error: `Unknown operator: ${operator}` };
@@ -284,12 +307,9 @@ async function executeConditional(
   return {
     success: true,
     output: {
-      conditionMet,
-      variable,
-      variableValue,
-      operator,
-      value,
-    },
+      result: isTrue,
+      path: isTrue ? "true" : "false" // We'll use this to determine next node
+    }
   };
 }
 
@@ -300,6 +320,9 @@ export async function executeWorkflow(
   workflowId: string,
   definition: WorkflowDefinition
 ): Promise<{ success: boolean; runId?: string; error?: string }> {
+  let runId: string | undefined;
+  let context: ExecutionContext | undefined;
+
   try {
     // Create workflow run record
     const { data: runData, error: runError } = await supabase
@@ -317,13 +340,16 @@ export async function executeWorkflow(
       return { success: false, error: "Failed to create workflow run" };
     }
 
-    const runId = runData.id;
+    runId = runData.id;
     console.log(`Created workflow run: ${runId}`);
-    const context: ExecutionContext = {
+    context = {
       workflowId,
-      runId,
+      runId: runId!,
       variables: {},
+      logs: [],
     };
+
+    if (!context) throw new Error("Context initialization failed");
 
     // Find trigger node (starting point)
     const triggerNode = definition.nodes.find((node) =>
@@ -342,6 +368,7 @@ export async function executeWorkflow(
     const executedNodes = new Set<string>();
     const nodeQueue = [triggerNode.id];
     let lastOutput: any = null;
+    let currentNodeResult: NodeExecutionResult | null = null;
 
     console.log(`Starting execution for run ${runId} with trigger ${triggerNode.id}`);
 
@@ -359,10 +386,14 @@ export async function executeWorkflow(
       }
 
       console.log(`Processing node: ${currentNode.id} (${currentNode.type})`);
+      context.logs.push(`Processing node: ${currentNode.data.label || currentNode.type}`);
 
       // Execute node
       const result = await executeNode(currentNode, context, lastOutput);
+      currentNodeResult = result;
       console.log(`Node execution result:`, result);
+      context.logs.push(`Node ${currentNode.data.label || currentNode.type} result: ${result.success ? 'Success' : 'Failed'}`);
+
 
       executedNodes.add(currentNodeId);
 
@@ -372,7 +403,10 @@ export async function executeWorkflow(
           .from("workflow_runs")
           .update({
             status: "failed",
-            logs: `Node ${currentNode.data.label} failed: ${result.error}`,
+            logs: context.logs.join("\n"),
+            output: {
+              message: `Node ${currentNode.data.label} failed: ${result.error}`,
+            }
           })
           .eq("id", runId);
         return { success: false, runId, error: result.error };
@@ -408,18 +442,35 @@ export async function executeWorkflow(
       }
     }
 
-    // Mark workflow as completed
+    // Add transaction hash to logs if available
+    if (currentNodeResult?.output?.transactionHash) {
+      context.logs.push(`Transaction Hash: ${currentNodeResult.output.transactionHash}`);
+    }
+
+    // Update run status
     await supabase
       .from("workflow_runs")
       .update({
         status: "completed",
-        logs: `Workflow completed successfully. Executed ${executedNodes.size} nodes.`,
+        logs: context.logs?.join("\n"),
       })
       .eq("id", runId);
 
     return { success: true, runId };
   } catch (error: any) {
-    console.error("Workflow execution error:", error);
-    return { success: false, error: error.message || "Workflow execution failed" };
+    console.error("Workflow execution failed:", error);
+
+    // Update run status to failed
+    if (runId) {
+      await supabase
+        .from("workflow_runs")
+        .update({
+          status: "failed",
+          logs: `Error: ${error.message}\n${context?.logs?.join("\n") || ""}`,
+        })
+        .eq("id", runId);
+    }
+
+    return { success: false, error: error.message };
   }
 }

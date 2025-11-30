@@ -1,9 +1,9 @@
 "use client";
-
 import Link from "next/link";
 import Image from "next/image";
-import { Save, Play } from "lucide-react";
+import { Save, Play, Workflow } from "lucide-react";
 import GlassButton from "@/components/ui/GlassButton";
+import { useRouter } from "next/navigation";
 
 interface BuilderHeaderProps {
   workflowName: string;
@@ -18,6 +18,13 @@ export default function BuilderHeader({
   onSave,
   onRun,
 }: BuilderHeaderProps) {
+
+  const router = useRouter();
+
+  const handlNavigate = () => {
+    router.push("/workflows");
+  }
+
   return (
     <div
       className="fixed top-0 left-0 right-0 z-30 border-b border-white/10"
@@ -52,6 +59,10 @@ export default function BuilderHeader({
 
         {/* Save and Run Buttons on Right */}
         <div className="flex items-center gap-3">
+          <GlassButton variant="secondary" onClick={handlNavigate} className="min-w-[120px] p-2 flex justify-center items-center">
+            <Workflow className="mr-2" size={18} />
+            Workflow
+          </GlassButton>
           <GlassButton variant="secondary" onClick={onSave} className="min-w-[120px] p-2 flex justify-center items-center">
             <Save className="mr-2" size={18} />
             Save

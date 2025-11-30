@@ -33,5 +33,6 @@ export interface WorkflowRun {
   logs?: string;
   trigger_type?: string;
   executed_at: string;
+  output?: any;
 }
 

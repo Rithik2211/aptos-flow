@@ -68,7 +68,7 @@ export default function WorkflowCanvas() {
           onNodeClick={(event, node) => setSelectedNode(node)}
           nodeTypes={nodeTypes}
           defaultEdgeOptions={defaultEdgeOptions}
-          defaultViewport={{ x: 0, y: 0, zoom: 0.8 }}
+          defaultViewport={{ x: 0, y: 0, zoom: 0.75 }}
           fitView={false}
           className="bg-[#0D0D0E]"
         >

@@ -38,10 +38,10 @@ export default function WorkflowBuilderPage() {
   }, [checkAuth]);
 
   useEffect(() => {
-    if (!isNew && isAuthenticated) {
+    if (!isNew) {
       loadWorkflowData();
     }
-  }, [workflowId, isAuthenticated]);
+  }, [workflowId]);
 
   useEffect(() => {
     if (selectedNode) {
