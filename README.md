@@ -1,4 +1,4 @@
-# AptosFlow – Smart Money Automation Builder
+# AptosFlow – Drag, Drop and Automate
 
 A no-code workflow builder for automating DeFi trading, payments, and rewards on Aptos blockchain. Built with Next.js 15, React Flow, and Supabase.
 
@@ -26,6 +26,7 @@ A no-code workflow builder for automating DeFi trading, payments, and rewards on
   - Price triggers
   - Aptos transfers
   - Decibel trades
+  - Geomi
   - Photon reward events
   - QR payment triggers
   - Scheduled workflows (cron)
@@ -72,6 +73,7 @@ Edit `.env.local` with your credentials:
 - `NEXT_PUBLIC_PHOTON_API_KEY`: Your Photon API key (optional, uses API Key not Client ID)
 - `APTOS_NETWORK`: Network to use (testnet/mainnet/devnet)
 - `DECIBEL_API_KEY`: Your Decibel API key (optional)
+- `GEOMI_API_KEY`: Your Geomi API key (optional)
 
 4. Set up Supabase database:
 
