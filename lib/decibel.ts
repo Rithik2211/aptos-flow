@@ -62,7 +62,19 @@ export async function executeSwap(
     quoteId: string,
     userAddress: string
 ): Promise<TradeResult> {
-    const maxRetries = 3;
+    // Mock mode for testing (bypasses Aptos API to avoid rate limits)
+    if (process.env.MOCK_MODE === "true") {
+        console.log("🧪 MOCK MODE: Simulating swap execution...");
+        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+        const mockHash = `0x${Math.random().toString(16).substring(2, 66)}`;
+        console.log(`✅ MOCK Transaction successful: ${mockHash}`);
+        return {
+            success: true,
+            transactionHash: mockHash,
+        };
+    }
+
+    const maxRetries = 5; // Increased from 3
     let lastError: any;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -111,8 +123,10 @@ export async function executeSwap(
                 error.message?.includes("rate limit");
 
             if (isRateLimit && attempt < maxRetries) {
-                const waitTime = Math.pow(2, attempt) * 1000; // Exponential backoff: 2s, 4s, 8s
+                // Longer exponential backoff: 10s, 30s, 60s, 120s, 240s
+                const waitTime = Math.pow(3, attempt) * 3000;
                 console.log(`⏳ Rate limit hit. Waiting ${waitTime / 1000}s before retry ${attempt + 1}/${maxRetries}...`);
+                console.log(`💡 Tip: The Aptos API has a 5-minute rate limit window. Waiting helps avoid hitting it again.`);
                 await new Promise(resolve => setTimeout(resolve, waitTime));
                 continue; // Retry
             }

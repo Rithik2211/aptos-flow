@@ -1,9 +1,19 @@
 import { Aptos, AptosConfig, Network, Account, Ed25519PrivateKey } from "@aptos-labs/ts-sdk";
 
 const APTOS_NETWORK = (process.env.APTOS_NETWORK || "testnet") as Network;
+const GEOMI_API_KEY = process.env.GEOMI_API_KEY;
 
+// Configure Aptos client with Geomi API key if provided
+// Geomi uses the standard Aptos endpoints but with an API key header for higher rate limits
 const config = new AptosConfig({
     network: APTOS_NETWORK,
+    ...(GEOMI_API_KEY && {
+        clientConfig: {
+            HEADERS: {
+                "Authorization": `Bearer ${GEOMI_API_KEY} `,
+            },
+        },
+    }),
 });
 
 export const aptos = new Aptos(config);
@@ -37,7 +47,7 @@ export function getExecutionAccount(): Account {
         executionAccount = Account.generate();
         console.warn("⚠️  No APTOS_EXECUTION_PRIVATE_KEY found. Generated new account:", executionAccount.accountAddress.toString());
         console.warn("⚠️  Add this to your .env file to persist the account:");
-        console.warn(`APTOS_EXECUTION_PRIVATE_KEY=${executionAccount.privateKey.toString()}`);
+        console.warn(`APTOS_EXECUTION_PRIVATE_KEY = ${executionAccount.privateKey.toString()} `);
     }
 
     return executionAccount;

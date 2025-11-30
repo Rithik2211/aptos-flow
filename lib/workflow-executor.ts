@@ -200,7 +200,9 @@ async function executeAptosTransfer(
   config: Record<string, any>,
   context: ExecutionContext
 ): Promise<NodeExecutionResult> {
-  const { recipientAddress, amount, tokenType = "APT" } = config;
+  // Support both 'recipient' (from UI) and 'recipientAddress' (legacy)
+  const recipientAddress = config.recipient || config.recipientAddress;
+  const { amount, tokenType = "APT" } = config;
 
   if (!recipientAddress) {
     return { success: false, error: "Recipient address is required" };
@@ -423,15 +425,29 @@ export async function executeWorkflow(
       const nextEdges = definition.edges.filter((edge) => edge.source === currentNodeId);
 
       // For conditional nodes, check which path to take
-      if (currentNode.type === "conditionalLogic" && result.output?.conditionMet !== undefined) {
-        const conditionMet = result.output.conditionMet;
-        // In a real implementation, edges would have labels for true/false paths
-        // For now, we'll execute all connected nodes
-        nextEdges.forEach((edge) => {
-          if (!executedNodes.has(edge.target)) {
-            nodeQueue.push(edge.target);
-          }
-        });
+      if (currentNode.type === "conditionalLogic" && result.output?.result !== undefined) {
+        const isTrue = result.output.result;
+        const truePathLabel = currentNode.data.config.truePath || "true";
+        const falsePathLabel = currentNode.data.config.falsePath || "false";
+
+        console.log(`Conditional result: ${isTrue}, routing to ${isTrue ? truePathLabel : falsePathLabel}`);
+
+        // In our simple implementation, we don't have labeled edges yet.
+        // So we'll assume:
+        // - If true, execute ALL next nodes (simulating "True" path)
+        // - If false, STOP execution (simulating "False" path or end)
+        // 
+        // TODO: In a real implementation, edges should have sourceHandle IDs matching "true" or "false"
+
+        if (isTrue) {
+          nextEdges.forEach((edge) => {
+            if (!executedNodes.has(edge.target)) {
+              nodeQueue.push(edge.target);
+            }
+          });
+        } else {
+          console.log("Condition false, stopping branch execution");
+        }
       } else {
         // Add all next nodes to queue
         nextEdges.forEach((edge) => {

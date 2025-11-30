@@ -11,6 +11,7 @@ import GlassButton from "@/components/ui/GlassButton";
 import { useWorkflowStore } from "@/stores/workflow-store";
 import { supabase } from "@/lib/supabase";
 import { useAuthStore } from "@/stores/auth-store";
+import toast, { Toaster } from "react-hot-toast";
 
 export default function WorkflowBuilderPage() {
   const params = useParams();
@@ -99,7 +100,7 @@ export default function WorkflowBuilderPage() {
 
         if (error) throw error;
         if (data) {
-          router.push(`/builder/${data.id}`);
+          router.push(`/ builder / ${data.id} `);
         }
       } else {
         const { error } = await supabase
@@ -112,15 +113,15 @@ export default function WorkflowBuilderPage() {
           .eq("id", workflowId);
 
         if (error) throw error;
-        alert("Workflow saved successfully!");
+        toast.success("Workflow saved successfully!");
       }
     } catch (error) {
       console.error("Error saving workflow:", error);
-      alert("Failed to save workflow");
+      toast.error("Failed to save workflow");
     }
   };
 
-  const handleRun = async () => {
+  const handleRunWorkflow = async () => {
     // TEMPORARILY DISABLED: Skip auth check for development
     /*
     if (!isAuthenticated) {
@@ -130,30 +131,42 @@ export default function WorkflowBuilderPage() {
     */
 
     if (workflowId === "new") {
-      alert("Please save the workflow first before running it.");
+      toast.error("Please save the workflow first before running it.");
       return;
     }
 
     setIsRunning(true);
+    const toastId = toast.loading("🚀 Starting workflow execution...");
+
     try {
+      const workflowDefinition = {
+        nodes,
+        edges,
+      };
+
       const response = await fetch("/api/workflows/execute", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ workflowId }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workflowId: workflowId,
+          definition: workflowDefinition,
+        }),
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to execute workflow");
+        throw new Error(result.error || "Failed to execute workflow");
       }
 
-      alert(`Workflow execution started! Run ID: ${data.runId}`);
+      if (result.success) {
+        toast.success(`✅ Workflow completed! Check execution history below.`, { id: toastId, duration: 5000 });
+      } else {
+        toast.error(`❌ Workflow failed: ${result.error} `, { id: toastId, duration: 6000 });
+      }
     } catch (error: any) {
       console.error("Error running workflow:", error);
-      alert(`Execution failed: ${error.message}`);
+      toast.error(`❌ Execution failed: ${error.message} `, { id: toastId, duration: 6000 });
     } finally {
       setIsRunning(false);
     }
@@ -190,7 +203,7 @@ export default function WorkflowBuilderPage() {
         workflowName={workflowName}
         onWorkflowNameChange={setWorkflowName}
         onSave={handleSave}
-        onRun={handleRun}
+        onRun={handleRunWorkflow}
       />
 
       {/* Main Content */}
@@ -217,6 +230,26 @@ export default function WorkflowBuilderPage() {
         onClose={() => {
           setIsConfigModalOpen(false);
           setSelectedNode(null);
+        }}
+      />
+
+      {/* Toast Notifications */}
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: "rgba(13, 13, 14, 0.95)",
+            color: "#fff",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            backdropFilter: "blur(20px)",
+          },
+          success: {
+            iconTheme: {
+              primary: "#4F9EFF",
+              secondary: "#fff",
+            },
+          },
         }}
       />
     </div>
