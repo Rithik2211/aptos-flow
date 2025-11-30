@@ -100,7 +100,9 @@ export default function WorkflowBuilderPage() {
 
         if (error) throw error;
         if (data) {
-          router.push(`/ builder / ${data.id} `);
+          toast.success("Workflow created successfully!");
+          // Navigate to the new workflow page
+          window.location.href = `/builder/${data.id}`;
         }
       } else {
         const { error } = await supabase
@@ -115,9 +117,10 @@ export default function WorkflowBuilderPage() {
         if (error) throw error;
         toast.success("Workflow saved successfully!");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving workflow:", error);
-      toast.error("Failed to save workflow");
+      const errorMessage = error.message || error.toString();
+      toast.error(`Failed to save workflow: ${errorMessage}`);
     }
   };
 
